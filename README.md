@@ -3,7 +3,7 @@ Tree Explorer (T-REX) - A phylogenetic tree exploration and query tool
 
 # Installation
 
-A pre-compiled binary for windows has been provided. Simply download to a location of your choosing and create a shortcut pointing to the executable.
+A pre-compiled binary for windows has been provided. Simply download to a location of your choosing and create a shortcut pointing to the executable. Alternatively you may run the code directly following the installation of PyQT5 (PyQt5==5.15.9), Pandas (pandas==1.5.3), ete3toolkit (ete3==3.1.2), and pillow (pillow==10.2.0).
 
 # USAGE
 
