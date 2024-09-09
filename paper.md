@@ -16,7 +16,9 @@ affiliations:
   - name: IFF R&D Culture Development, 86220, Dangé-Saint-Romain, France
     index: 1
 date: 09 September 2024
+bibliography: references.bib
 ---
+
 # Summary
 
 The Tree Explorer (T-REX) project is an open-source initiative designed to enhance the visualization and integration of phylogenetic and phenotypic data. Utilizing the ete3 toolkit, T-REX offers a user-friendly interface and a suite of tools written in Python. This project addresses the longstanding need to easily label phylogenetic trees with phenotypic data stored in other files and efficiently query this data to find entities of interest. T-REX includes various tools to help users prepare their input files and refine the output to create publication-worthy figures. It aims to facilitate the rapid identification of strains of interest for research projects, making large phylogenetic trees more interpretable and useful for evolutionary biology studies.
@@ -35,24 +37,22 @@ T-REX can be run directly from the source code provided following installation o
 
 # Example Usage
 
-Phenotype Mapping and Querying
+*Phenotype Mapping and Querying*
+
 To perform a phenotype mapping-associated analysis, start by preparing the traits file. Ensure the first column contains “GenomeID” that matches the names used in the phylogenetic tree. The file can be in Excel or CSV format, but it’s best to avoid using too many special characters. Tools are provided to extract and exchange leaf names from trees, facilitating the creation of compatible files.
 Once the file is ready, upload it and click on “label options” to select the features of interest. After making your selections, upload the tree, and the selected labels will appear beside the corresponding strain matches.
 Next, use the powerful label search feature to query the tree. Enter your search criteria in the query box using the trait file label names and either absolute values or ranges, depending on the data type. For example, to highlight strains not containing the gene g1 and possessing an average colony size under 7mm, use the query “g1=0 AND colony size=(L, 7) AND colour=yellow” 
 (Fig 1). Queries can be as complex as required and can also be used to pre-collapse or crop sections of the tree to simplify the view, especially for large and challenging trees.
 
-\autoref{fig:one}
+![Example T-REX output on test data following specific query for g1 gene absence and colony size lower than 7mm (left) and heatmap display of quantitative data (right).\label{fig:one}](figure1.png)
 
-Quantitative Data Displays
-When dealing with arrays of quantitative data, users can perform complex queries to select strains based on various ranges and thresholds. However, this approach may not always be practical. A more effective method can be to use a visual display of the data. This is provided as a distinct heatmap functionality within the application, allowing users to easily link and display data directly on the tree (Fig 1). This is particularly useful for visualizing quantitative data from large-scale phenotypic experiments and core-pan genomic datasets, where users can utilize presence-absence data or specific numeric labels corresponding to gene variants.
+*Quantitative Data Displays*
+
+When dealing with arrays of quantitative data, users can perform complex queries to select strains based on various ranges and thresholds. However, this approach may not always be practical. A more effective method can be to use a visual display of the data. This is provided as a distinct heatmap functionality within the application, allowing users to easily link and display data directly on the tree (\autoref{fig:one}). This is particularly useful for visualizing quantitative data from large-scale phenotypic experiments and core-pan genomic datasets, where users can utilize presence-absence data or specific numeric labels corresponding to gene variants.
 
 # Conclusion
 
 T-REX provides an easy-to-use tool that allows users to effectively link their phylogenetic and phenotypic datasets in order to answer diverse biological questions. Available as a pre-compiled binary or rapid install, users can label trees, perform complex queries to identify individuals of interest, link large-scale quantitative datasets, and produce publication-ready figures. This tool, along with its future developments, is expected to assist in evolutionary biological studies and in the identification and selection of biological entities exhibiting traits of interest.
-
-# Figures
-
-![Example T-REX output on test data following specific query for g1 gene absence and colony size lower than 7mm (left) and heatmap display of quantitative data (right).\label{fig:one}](figure1.png)
  
 # References
 
