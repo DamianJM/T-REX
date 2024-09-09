@@ -38,7 +38,7 @@ T-REX can be run directly from the source code provided following installation o
 To perform a phenotype mapping-associated analysis, start by preparing the traits file. Ensure the first column contains “GenomeID” that matches the names used in the phylogenetic tree. The file can be in Excel or CSV format, but it’s best to avoid using too many special characters. Tools are provided to extract and exchange leaf names from trees, facilitating the creation of compatible files.
 Once the file is ready, upload it and click on “label options” to select the features of interest. After making your selections, upload the tree, and the selected labels will appear beside the corresponding strain matches.
 Next, use the powerful label search feature to query the tree. Enter your search criteria in the query box using the trait file label names and either absolute values or ranges, depending on the data type. For example, to highlight strains not containing the gene g1 and possessing an average colony size under 7mm, use the query “g1=0 AND colony size=(L, 7) AND colour=yellow” 
-(Fig 1). Queries can be as complex as required and can also be used to pre-collapse or crop sections of the tree to simplify the view, especially for large and challenging trees.
+(\autoref{fig:one}). Queries can be as complex as required and can also be used to pre-collapse or crop sections of the tree to simplify the view, especially for large and challenging trees.
 
 ![Example T-REX output on test data following specific query for g1 gene absence and colony size lower than 7mm (left) and heatmap display of quantitative data (right).\label{fig:one}](figure1.png)
 
