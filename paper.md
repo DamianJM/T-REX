@@ -12,7 +12,7 @@ authors:
   - name: Jean-Marc Ladrière
     equal-contrib: true
     affiliation: 1
-affiliations
+affiliations:
   - name: IFF R&D Culture Development, 86220, Dangé-Saint-Romain, France
     index: 1
 date: 09 September 2024
@@ -64,3 +64,4 @@ T-REX provides an easy-to-use tool that allows users to effectively link their p
 - Nguyen, L.T., Schmidt, H.A., Von Haeseler, A. and Minh, B.Q., 2015. IQ-TREE: a fast and effective stochastic algorithm for estimating maximum-likelihood phylogenies. *Molecular Biology and Evolution*, 32(1), pp.268-274.
 - Stamatakis, A., 2014. RAxML version 8: a tool for phylogenetic analysis and post-analysis of large phylogenies. *Bioinformatics*, 30(9), pp.1312-1313.
 - Tamura, K., Stecher, G. and Kumar, S., 2021. MEGA11: molecular evolutionary genetics analysis version 11. *Molecular Biology and Evolution*, 38(7), pp.3022-3027.
+---
