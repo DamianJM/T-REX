@@ -12,7 +12,7 @@ Features will be added over time to this open source project.
 
 # TABLE OF CONTENTS
 
-- [Usage](#INSTALLATION)
+- [INSTALLATION](#INSTALLATION)
  
 - [USAGE](#USAGE)
     - [Usage](#Usage)
