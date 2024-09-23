@@ -1,4 +1,5 @@
-# T-REX     ![alt text](https://github.com/DamianJM/T-REX/tree/main/img/iff_logo.png?raw=true)
+# T-REX     ![TREX logo](https://raw.githubusercontent.com/DamianJM/T-REX/main/img/.github/iff_logo.png)
+            
 ### Tree Explorer (T-REX) - A phylogenetic tree exploration and query tool
 
 T-REX was created in response to requests to be able to easily link phylogenetic and phenotypic information together and yield insights from this. 
