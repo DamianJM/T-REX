@@ -10,8 +10,19 @@ and perform queries to find individuals of interest.
 
 Features will be added over time to this open source project.
 
+# TABLE OF CONTENTS
 
-# Installation
+- INSTALLATION
+ 
+- USAGE
+    - Usage
+    - Colour Leaf Queries
+    - Adding Custom Labels
+    - Heatmaps
+    - Explanations for Each Button
+
+
+# INSTALLATION
 
 #### The simplest way to install T-REX is to run the following:
 
