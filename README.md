@@ -28,7 +28,7 @@ Features will be added over time to this open source project.
 #### The simplest way to install T-REX is to run the following:
 
 ```bash
-pip install TreeExplorer-Python
+pip install TreeExplorer-Python==1.2
 ```
 
 Then simply:
@@ -104,7 +104,7 @@ After upload click to apply the heatmap and select the desired formatting option
 
 Upload Genomap: To upload your table containing strain names and characteristics of interest.
 Upload Tree File: To upload your phylogenetic tree in newick format.
-Show Tree: Display tree.
+Show/Render Tree: Display tree.
 Reset: Remove all files and formatting to start a new analysis.
 Exit: Close the program.
 Prune Tree: Remove branches for all EXCEPT selected strains.
@@ -127,6 +127,7 @@ Tree Name Export: Extracts tree names into a text file. Useful if you have a tre
 Tree Name Exchange: Upload a file with old and new times to swap those in the tree.
 Change Tree Topology: Toggle rectangular and circular forms of tree.
 Export Tree File: Export raw tree file for other uses (labels also exported)
+Toggle Show/Render: Allow for direct image output instead of showing tree interactively (may be useful for excessively large trees)
 Close Window: Closes this tool box
 
 ##### Troubleshooting

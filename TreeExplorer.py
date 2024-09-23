@@ -8,7 +8,7 @@ import sys
 from ete3 import Tree, TreeStyle, NodeStyle, AttrFace, TreeNode, RectFace, TextFace, ProfileFace
 #Data processing
 import pandas as pd
-import openpyxl
+#import openpyxlcd
 #Interface Creation
 import tkinter as tk
 from tkinter import filedialog, simpledialog
@@ -18,6 +18,8 @@ from tkinter.messagebox import askyesno
 from PIL import Image, ImageTk
 
 from tkinter import ttk
+
+import ctypes # Needed for dpi reset
 
 class Application(tk.Frame, tk.Text):
     """ GUI application enabling the labelling and exploration of phylogenetic trees based on genogroup file information"""
@@ -41,11 +43,20 @@ class Application(tk.Frame, tk.Text):
         self.labelstatus: bool = True # For heatmap labels
         self.heatmap_valuestatus: bool = False # To produce a heatmap of values
         self.pruneList: list = [] # List selection for pruning 
-        self.collapseList: list = [] #List selection for collapsing
+        self.collapseList: list = [] # List selection for collapsing
+
+        self.treetopology: dict = {"Rectangular topology selected": "r",
+                                   "Circular topology selected": "c"
+                                   } # set tree topology
+        
+        self.treetopologyValue: int = 0 # For toggling tree topology
+        self.tree_topology_output: str = "r"
 
         self.nodefaces: int = 0 # For tree modifications
         self.LTree = None # Processed tree
         self.newick: str = "" # Raw tree file
+
+        self.heatmapfaces: int = 0 # For heatmap modifications
 
         self.value = None # For queries
 
@@ -56,6 +67,11 @@ class Application(tk.Frame, tk.Text):
         self.new_hm: str = "" # Processed heatmap
         self.hmcolumns: list = [] # columns
         self.hmrows: list = [] # rows
+
+        self.toggle: int = 0 # for toggling below options
+        self.render_options: dict = {"render": False, "equalize_branch": False}
+        # toggle write to file or show tree
+        # toggle branch lengths for image output aesthetics
 
     # Text output methods for writing concisely to text boxes
     def write(self, content):
@@ -70,8 +86,9 @@ class Application(tk.Frame, tk.Text):
         # create instruction label and logo
 
         # Load the logo image and resize it
+        # Load the logo image and resize it
         logo_image = Image.open("./img/iff_logo.png")
-        logo_image = logo_image.resize((250, 200), Image.LANCZOS)  # Adjust the desired size
+        logo_image = logo_image.resize((300, 250), Image.LANCZOS)  # Adjust the desired size
 
         # Convert the resized image to PhotoImage
         logo_image = ImageTk.PhotoImage(logo_image)
@@ -90,38 +107,43 @@ class Application(tk.Frame, tk.Text):
 
         # Create a custom style for rounded buttons
         button_style = {"relief": "groove", "background": "#0075CF", "foreground": "#FFFFFF",
-                        "font": "Helvetica 12", "width": 20, "anchor": "n"}
+                        "font": "Helvetica 16", "width": 30, "anchor": "n"}
+        
+        # Create a custom style for rounded buttons
+        button_styleEx = {"relief": "groove", "background": "#777B7E", "foreground": "#FFFFFF",
+                        "font": "Helvetica 16", "width": 30, "anchor": "n"}
         
         #Smaller buttons for two column packing
         button_styleSM = {"relief": "groove", "background": "#0075CF", "foreground": "#FFFFFF",
-                        "font": "Helvetica 12", "width": 10, "anchor": "n"}
+                        "font": "Helvetica 16", "width": 15, "anchor": "n"}
         
         # Variant small
         
         button_styleSMY = {"relief": "groove", "background": "#EE7600", "foreground": "#FFFFFF",
-                        "font": "Helvetica 12", "width": 10, "anchor": "n"}
+                        "font": "Helvetica 16", "width": 15, "anchor": "n"}
         
         button_styleRE = {"relief": "groove", "background": "#D31A38", "foreground": "#FFFFFF",
-                          "font": "Helvetica 12", "width": 20, "anchor": "n"}
+                          "font": "Helvetica 16", "width": 30, "anchor": "n"}
         
         button_styleG = {"relief": "groove", "background": "#03AC13", "foreground": "#FFFFFF",
-                         "font": "Helvetica 12", "width": 20, "anchor": "n"}
+                         "font": "Helvetica 16", "width": 30, "anchor": "n"}
         
         #Hover styles
         button_styleHover = {"relief": "groove", "background": "#FFFFFF", "foreground": "#000000",
-                             "font": "Helvetica 12", "width": 20, "anchor": "n"}
+                             "font": "Helvetica 16", "width": 30, "anchor": "n"}
         
         button_styleHoverSM = {"relief": "groove", "background": "#FFFFFF", "foreground": "#000000",
-                             "font": "Helvetica 12", "width": 10, "anchor": "n"}
+                             "font": "Helvetica 16", "width": 15, "anchor": "n"}
         
-        stylevalues = [ttk.Style()] * 5
-        style, styleR, styleG, styleSM, styleSMY = stylevalues
+        stylevalues = [ttk.Style()] * 6
+        style, styleR, styleG, styleGr, styleSM, styleSMY = stylevalues
         
         style.theme_use('alt')
         styleR.theme_use('alt')
         styleG.theme_use('alt')
         styleSM.theme_use('alt')
         styleSMY.theme_use('alt')
+        styleGr.theme_use('alt')
 
         # Normal Button
         style.configure("NormalButton.TButton", **button_style)
@@ -132,6 +154,9 @@ class Application(tk.Frame, tk.Text):
         # Green Button
         styleG.configure("GreenButton.TButton", **button_styleG)
         styleG.map("GreenButton.TButton")
+        # Gray button
+        styleGr.configure("GreyButton.TButton", **button_styleEx)
+        styleGr.map("GreyButton.TButton")
         # Small buttons
         styleSM.configure("SMButton.TButton", **button_styleSM)
         styleSM.map("SMButton.TButton")
@@ -160,6 +185,8 @@ class Application(tk.Frame, tk.Text):
                 button.configure(style='SMButton.TButton')
             elif setting == "SmallY":
                 button.configure(style='SMYButton.TButton')
+            elif setting == "grey":
+                button.configure(style='GreyButton.TButton')
             else:
                 button.configure(style='GreenButton.TButton')
 
@@ -178,17 +205,20 @@ class Application(tk.Frame, tk.Text):
             elif setting == "SmallY":
                 button.bind("<Enter>", lambda event: on_enter(event, button, "Small"))
                 button.bind("<Leave>", lambda event: on_leave(event, button, "SmallY"))
+            elif setting == "grey":
+                button.bind("<Enter>", lambda event: on_enter(event, button, "grey"))
+                button.bind("<Leave>", lambda event: on_leave(event, button, "grey"))
             else:
                 button.bind("<Enter>", lambda event: on_enter(event, button, "Green"))
                 button.bind("<Leave>", lambda event: on_leave(event, button, "Green"))
 
         # Create buttons and pack them to the parent widget
-        button_texts = ["UPLOAD GENOMAP", "UPLOAD TREE FILE", "SHOW TREE ", "RESET", "EXIT", "PRUNE TREE", "COLLAPSE",
-                        "CLEAR PRUNE", "LABEL SEARCH", "COL STRAIN", "CLEAR COLOUR", "UPLOAD HM", "ACTIVATE HM", "ABOUT", "EXPORT"]
+        button_texts = ["UPLOAD GENOMAP", "UPLOAD TREE FILE", "SHOW/RENDER TREE ", "RESET", "EXIT", "PRUNE TREE", "COLLAPSE",
+                        "CLEAR PRUNE", "LABEL SEARCH", "COL STRAIN", "CLEAR COLOUR", "UPLOAD HM", "ACTIVATE HM", "ABOUT", "OTHER TOOLS"]
         
         button_commands = [self.UploadGenogroup, self.UploadTree, self.ShowTree , self.Reset, self.Close, self.treePrune, self.collapseTree,
                            self.clearPrune, self.colourlabel, self.colourStrainActive, self.clearColor, self.UploadHeatmap, self.ApplyHeatmap, self.About,
-                           self.export_labelled]
+                           self.other_tools]
         self.buttons = []
         col=0
         for i, text in enumerate(button_texts):
@@ -207,9 +237,9 @@ class Application(tk.Frame, tk.Text):
                 bind_hover_events(button, "Green")
                 button.grid(row=34, column=0, padx=(5,5), sticky="we", columnspan=2)
                 self.buttons.append(button)
-            elif text == "EXPORT":
-                button = ttk.Button(self, text=text, command=button_commands[i], style='NormalButton.TButton')
-                bind_hover_events(button, "Normal")
+            elif text == "OTHER TOOLS":
+                button = ttk.Button(self, text=text, command=button_commands[i], style='GreyButton.TButton')
+                bind_hover_events(button, "grey")
                 button.grid(row=32, column=0, padx=(5,5), sticky="we", columnspan=2)
                 self.buttons.append(button)
             elif text in button_texts[5:] and text != "ABOUT":
@@ -253,8 +283,8 @@ class Application(tk.Frame, tk.Text):
 
         #ttk style object
 
-        menu_styleHover = {"relief": "groove", "background": "#FFFFFF", "foreground": "#000000", "font": "Helvetica 12", "width": 28, "anchor": "n"}
-        menu_styles = {"relief": "groove", "background": "#0075CF", "foreground": "#FFFFFF", "font": "Helvetica 12", "width": 28, "anchor": "n"}
+        menu_styleHover = {"relief": "groove", "background": "#FFFFFF", "foreground": "#000000", "font": "Helvetica 16", "width": 28, "anchor": "n"}
+        menu_styles = {"relief": "groove", "background": "#0075CF", "foreground": "#FFFFFF", "font": "Helvetica 16", "width": 28, "anchor": "n"}
 
         Mstyle = ttk.Style()
 
@@ -321,7 +351,7 @@ class Application(tk.Frame, tk.Text):
         self.W1.tag_configure("bold", font=("Helvetica", 12, "bold", "italic"))
 
         #Text entered into box
-        self.W1.insert(tk.END, "TREE EXPLORER 2023", "bold")
+        self.W1.insert(tk.END, "TREE EXPLORER 2024", "bold")
         self.W1.insert(tk.END, "\n\nSoftware package enabling the labelling of phylogenetic trees")
         self.W1.insert(tk.END, "\nusing information derived from genomap tables.")
         self.W1.insert(tk.END, "\n\nUsage:")
@@ -383,9 +413,18 @@ class Application(tk.Frame, tk.Text):
         self.W1.insert(tk.END, "\nAbout: Opens this box.")
         self.W1.insert(tk.END, "\nLabel Options: Contains characteristics derived from genomap file.")
         self.W1.insert(tk.END, "\nSelect Strains: Select strains for further analysis.")
-        self.W1.insert(tk.END, "\nExport: Output labelled data to csv file for colour coded strains.")
         self.W1.insert(tk.END, "\nUpload HM: Upload you heatmap file if desired.")
         self.W1.insert(tk.END, "\nActivate HM: apply formatting and show heatmap.")
+        self.W1.insert(tk.END, "\nOther Tools: Display menu containing other tools.")
+
+        self.W1.insert(tk.END, "\n\nOther Tools Menu\n\n", "bold")
+
+        self.W1.insert(tk.END, "\nExport labelled data: Output labelled data to csv file for colour coded strains.")
+        self.W1.insert(tk.END, "\nTree Name Export: Extracts tree names into a text file. Useful if you have a tree only and want to construct a genomap type file")
+        self.W1.insert(tk.END, "\nTree Name Exchange: Upload a file with old and new times to swap those in the tree.")
+        self.W1.insert(tk.END, "\nChange Tree Topology: Toggle rectangular and circular forms of tree.")
+        self.W1.insert(tk.END, "\nExport Tree File: Export raw tree file for other uses (labels also exported)")
+        self.W1.insert(tk.END, "\nClose Window: Closes this tool box")
         
 
         self.W1.insert(tk.END, "\n\nTroubleshooting", "bold")
@@ -514,7 +553,6 @@ class Application(tk.Frame, tk.Text):
             update_button_styles() 
 
             # Update button styles based on the selected option
-        
         def update_button_styles():
             for button in buttons:
                 button.configure(**button_styles["normal"])  # Reset all buttons to normal style
@@ -531,7 +569,8 @@ class Application(tk.Frame, tk.Text):
             radioWindow.destroy()
 
         # top level window
-        radioWindow = tk.Toplevel(self, bg="#0075CF")
+        radioWindow = tk.Toplevel(self, bg="lightgrey")
+        radioWindow.geometry("200x450")
 
         # Options with associated functions
         options = [
@@ -558,14 +597,14 @@ class Application(tk.Frame, tk.Text):
 
         # Define button styles
         button_styles = {
-            "normal": {"relief": tk.RAISED, "width": 20},
+            "normal": {"relief": tk.RAISED, "width": 20, "bg": "#0075CF", "fg": "#FFFFFF"},
             "selected": {"relief": tk.SUNKEN, "width": 20, "bg": "#D31A38", "fg": "#FFFFFF"}
         }
 
         buttons = []  # Store the buttons in a list for easier access
 
         for title, button_options in options:
-            title_label = tk.Label(radioWindow, text=title, font=("Arial", 12, "bold"), anchor="w", fg="#FFFFFF", bg="#0075CF")
+            title_label = tk.Label(radioWindow, text=title, font=("Arial", 12, "bold"), anchor="w", fg="#000000", bg="lightgray")
             title_label.pack(pady=5)
 
             for text, command in button_options:
@@ -577,6 +616,101 @@ class Application(tk.Frame, tk.Text):
 
         # Need to return to allow menu to wait and then execute future code block
         return radioWindow
+    
+    def other_tools(self):
+        """Menu for additional tools"""
+
+        # new window
+        toolwindow = tk.Toplevel(self, bg="lightgrey")
+        toolwindow.geometry("290x550")
+
+        # Load the logo image and resize it
+        logo_image = Image.open("./img/iff_logo.png")
+        logo_image = logo_image.resize((250, 200), Image.LANCZOS)  # Adjust the desired size
+
+        # Convert the resized image to PhotoImage
+        logo_image = ImageTk.PhotoImage(logo_image)
+
+        # Create a label to display the logo image
+        logo_label = tk.Label(toolwindow, image=logo_image)
+        logo_label.image = logo_image
+        logo_label.grid(row=0, column=0, columnspan=2, rowspan=2, pady=(15, 0))
+
+        # Customize the label appearance
+        logo_label.config(bg="#FFFFFF")  # Background color
+        logo_label.config(borderwidth=2, relief="solid")  # Add a border
+
+        # Button style options
+
+        button_style = {"relief": "groove", "background": "#0075CF", "foreground": "#FFFFFF",
+                        "font": "Helvetica 12", "width": 30, "anchor": "n"}
+        
+        closebutton_style = {"relief": "groove", "background": "#D31A38", "foreground": "#FFFFFF",
+                        "font": "Helvetica 12", "width": 30, "anchor": "n"}
+        
+        button_style_hover = {"relief": "groove", "background": "#FFFFFF", "foreground": "#000000",
+                        "font": "Helvetica 12", "width": 30, "anchor": "n"}
+
+        # Button style object
+
+        style, styleH, styleC = ttk.Style(), ttk.Style(), ttk.Style()
+        style.theme_use('alt')
+        styleH.theme_use('alt')
+        styleC.theme_use('alt')
+
+        style.configure("Normal_ExtraButton.TButton", **button_style)
+        style.map("Normal_ExtraButton.TButton")
+        style.configure("Close_ExtraButton.TButton", **closebutton_style)
+        style.map("Close_ExtraButton.TButton")
+        styleH.configure("ExtraHoverButton.TButton", **button_style_hover)
+        styleH.map("ExtraHoverButton.TButton")
+
+        # button associated functions
+
+        #Config functions for buttions
+        def on_enter(event, button):
+                button.configure(style='ExtraHoverButton.TButton')
+            
+        def on_leave(event, button, setting):
+            if setting != "close":
+                button.configure(style="Normal_ExtraButton.TButton")
+            else:
+                button.configure(style="Close_ExtraButton.TButton")
+
+
+        def bind_hover_events(button, setting):
+            button.bind("<Enter>", lambda event: on_enter(event, button))
+            if setting != "close":
+                button.bind("<Leave>", lambda event: on_leave(event, button, "normal"))
+            else:
+                button.bind("<Leave>", lambda event: on_leave(event, button, "close"))
+
+
+        # CLose the window
+        def close():
+            """Remove option menu"""
+            toolwindow.destroy()
+
+        # buttons for window
+
+        self.extra_buttons = []
+
+        button_names = ["EXPORT LABELLED DATA", "TREE NAME EXPORT", "TREE NAME EXCHANGE", "CHANGE TREE TOPOLOGY",
+                        "EXPORT TREE FILE" , "SHOW/RENDER TREE", "CLOSE WINDOW"]
+        button_commands = [self.export_labelled, self.export_treenames, self.tree_exchange, self.tree_topology,
+                           self.export_tree, self.render_tree, close]
+
+        for i, text in enumerate(button_names):
+            if text != "CLOSE WINDOW":
+                button = ttk.Button(toolwindow, text=text, command=button_commands[i], style="Normal_ExtraButton.TButton")
+                bind_hover_events(button, "normal")
+                button.grid(row=i+6, column=0, sticky="we", padx=(5,5), pady=(5,5))
+                self.extra_buttons.append(button)
+            else:
+                button = ttk.Button(toolwindow, text=text, command=button_commands[i], style="Close_ExtraButton.TButton")
+                bind_hover_events(button, "close")
+                button.grid(row=i+6, column=0, sticky="we", padx=(5,5), pady=(5,5))
+                self.extra_buttons.append(button)
 
     # Upload of heatmap if desired
     def UploadHeatmap(self):
@@ -685,8 +819,7 @@ class Application(tk.Frame, tk.Text):
                 else:
                     x = r.iloc[0]
             except IOError:
-                self.call_error(9) # call error on genome ID
-            menu.add_command(label=x, command=lambda x=x: var.set(x))
+                self.call_error(11) # call error on genome ID
         var.trace("w", self.StrainSelector)
         return menu
 
@@ -713,13 +846,13 @@ class Application(tk.Frame, tk.Text):
             text_box.insert(tk.END, '\n' + temp + ' already selected!') 
 
     # Subset genogroups method
-    def subset(self, df, subList): # ADJUST WITH SELECTED VALUES
+    def subset(self, df, subList): #ADJUST WITH SELECTED VALUES
         """Function applying subset values to return new DF"""
-        # add function to read in sublist
+        #add function to read in sublist
         id = df.columns.values.tolist()[0]
         subList.insert(0, id)
         self.newdf = df.filter(subList, axis=1)
-        # create new row which will be tree label
+        #create new row which will be tree label
         self.newdf['Label'] = self.newdf[[col for col in self.newdf.columns]].agg(' // '.join, axis=1)
         return self.newdf
 
@@ -735,7 +868,7 @@ class Application(tk.Frame, tk.Text):
                 else:
                     IDList.append(j.iloc[0]) # extract first column if genome ID not present
             except IOError:
-                self.call_error(9) # call error for genome ID problems
+                self.call_error(11) # call error for genome ID problems
             Labels.append(j["Label"])
         for idx, item in enumerate(IDList):
             self.reference.update({str(item):str(Labels[idx])})
@@ -965,6 +1098,87 @@ class Application(tk.Frame, tk.Text):
         except AttributeError: # Capture error when no tree created 
             text_box.insert(tk.END, "\nError occurred during export process! Have you created a tree?")
 
+    # Export names from a tree which could be used to construct a genomap file
+    def export_treenames(self):
+        """Extract tree names from newick"""
+        if self.LTree:
+            leaf_names = self.LTree.get_leaf_names()
+            output = "\n".join([i for i in leaf_names])
+            with open("treenames.txt", "w") as f:
+                f.write(output)
+            text_box.insert(tk.END, "\n\nTree file names have been exported to \"treenames.txt\"")
+            
+        else:
+            self.call_error(9) # No tree file error
+    
+    def render_tree(self):
+        """toggle between showing and writing tree to file"""
+        self.toggle += 1
+        if self.toggle == 1:
+            self.render_options["render"] = not self.render_options["render"]
+            text_box.insert(tk.END, "\n\nTree will be written to file")
+        elif self.toggle == 2:
+            self.render_options["equalize_branch"] = not self.render_options["equalize_branch"]
+            text_box.insert(tk.END, "\n\nTree will be written to file with equalized branch lengths")
+        else:
+            for key in self.render_options.keys():
+                self.render_options[key] = False
+            text_box.insert(tk.END, "\n\nTree will be shown interactively")
+            self.toggle = 0
+
+    # Exchange tree names based on file upload
+    def tree_exchange(self):
+        """Exchange tree file names with import"""
+        filename = filedialog.askopenfilename()
+        if filename:
+            if "csv" or "xls" in filename:
+                text_box.insert(tk.END, '\n\nSelected: ' + str(filename))
+                #Data processing
+                if "csv" in filename:
+                    name_exchange_df = pd.read_csv(filename, encoding="ISO-8859-1", header=None)
+                else:
+                    name_exchange_df = pd.read_excel(filename, header=None)
+        else:
+            self.call_error(10) # file input error
+            
+        # old:new name dictionary
+        name_exchange = dict(name_exchange_df.values)
+
+        # get leaves
+        leaf_nodes = self.LTree.get_leaves()
+        
+        # Perform exchange 
+        for leaf in leaf_nodes:
+            old_name = leaf.name
+            new_name = name_exchange.get(old_name)
+            if new_name:
+                leaf.name = new_name
+        
+        text_box.insert(tk.END, '\n\nName exchange has been performed. Verify tree!')
+
+    # Change tree topology settings
+    def tree_topology(self):
+        # Pass to tree style
+        self.treetopologyValue += 1
+        if self.treetopologyValue >= len(self.treetopology):
+            self.treetopologyValue = 0
+
+        for i, (k, v) in enumerate(self.treetopology.items()):
+            if i == self.treetopologyValue:
+                self.tree_topology_output = v
+                text_box.insert(tk.END, f"\n\n{k}")
+
+    def export_tree(self):
+        """Export tree to file"""
+        if self.LTree:
+            filename = simpledialog.askstring("Output Filename", "Enter output tree file name: ")
+            if ".nw" not in filename:
+                filename = f"{filename}.nw"
+            self.LTree.write(format=1, outfile=filename)
+            text_box.insert(tk.END, "\nExport successful!")
+        else:
+            self.call_error(6)
+
     # Generate colours for heatmap
     def generate_color(self, value, code):
         if code == 1:
@@ -1004,19 +1218,20 @@ class Application(tk.Frame, tk.Text):
     def ShowTree(self):
         # Style the tree with basic features
         ts = TreeStyle()
+        ts.mode = self.tree_topology_output 
         ts.show_leaf_name = False
-        ts.branch_vertical_margin = 10
-        ts.scale = 120
+        ts.branch_vertical_margin = 50
+        ts.scale = 150
         # Apply styles and Show Tree
         if self.LTree:
             for node in self.LTree.traverse():
                 # disable default node shapes
-                node.img_style["size"] = 10
+                node.img_style["size"] = 0
                 node.img_style["shape"] = "sphere"
-                node.img_style["fgcolor"] = "darkred"
+                node.img_style["fgcolor"] = "black"
                 # Add tip names in a custom position
                 if node.is_leaf() and self.nodefaces == 0:
-                    nameF = AttrFace("name", fsize=10, fgcolor="slateGrey")
+                    nameF = TextFace(node.name, fsize=30, fgcolor="slateGrey")
                     node.add_face(nameF, column=1, position="branch-right")
 
             self.nodefaces += 1 #Stops duplication of names 
@@ -1041,7 +1256,7 @@ class Application(tk.Frame, tk.Text):
                     self.colourStrain(leaf)
 
             # Building the heatmap
-            if self.heatmapStatus:
+            if self.heatmapStatus and self.heatmapfaces == 0:
                 # Create rectangular faces in order to build heatmap
 
                 num_columns = len(self.new_hm[0]["values"]) # Get the number of columns
@@ -1064,6 +1279,8 @@ class Application(tk.Frame, tk.Text):
                         else:
                             rect_face = RectFace(width=30, height=30, fgcolor="black", bgcolor=color, label="X")
                             leaf_node.add_face(rect_face, column=column, position="aligned")
+                        
+                        self.heatmapfaces += 1 # stop duplicate heatmaps when reimaging tree
                     
                 # Add label for each column as a header if desired (this is the default)
                     if self.labelstatus:
@@ -1073,7 +1290,14 @@ class Application(tk.Frame, tk.Text):
 
             # Show the tree
             self.master.attributes("-disabled", True) # Freeze the main window when tree is displayed
-            self.LTree.show(tree_style=ts)
+            if not self.render_options["render"]: 
+                self.LTree.show(tree_style=ts)
+            else:
+                if self.render_options["equalize_branch"]:
+                    for node in self.LTree.traverse():
+                        node.dist = 1.0
+                self.LTree.render("tree_out.png", w=1200, h=800, units="px", tree_style=ts) # write tree to file
+                text_box.insert(tk.END, '\n\nTree file output to "tree_out.png"')
             self.master.attributes("-disabled", False) # Unfreeze the main window when tree is displayed
             self.master.deiconify() # Keep tkinter window in front
         else:
@@ -1087,7 +1311,7 @@ class Application(tk.Frame, tk.Text):
         val = [False] * 7
         self.pruneStatus, self.collapseStatus, self.colourStatus, self.colourstrainStatus, self.heatmap_valuestatus, self.heatmapStatus, self.heatmapGray = val
         self.labelstatus = True
-        self.nodefaces = 0 #Counter to limit duplicate branch names when tree reloaded
+        self.nodefaces, self.heatmapfaces = 0, 0 #Counter to limit duplicate branch names when tree reloaded
         self.df, self.newdf, self.LTree = "", "", None
         self.options_1, self.options_2 = ["NONE"],["NONE"]
         self.new_hm, self.hm = "", ""
@@ -1110,7 +1334,9 @@ class Application(tk.Frame, tk.Text):
             6:"No tree uploaded! Cannot perform function!",
             7:"No heatmap uploaded! Cannot perform function!",
             8:"File not valid. Please upload file in Excel or csv format. If problems persist get in touch.",
-            9:"Issue with GenomeID Extraction. Ensure that IDs matching tree branch names are in the first column of the table. You can extract these from your tree using the other tools section"
+            9:"Not possible to extract names due to absence of tree file. Please verify upload.",
+            10:"Problem with file upload. Verify that you have simply two columns: old names and new names.",
+            11:"Issue with GenomeID Extraction. Ensure that IDs matching tree branch names are in the first column of the table. You can extract these from your tree using the other tools section"
         }
         text_box.insert(tk.END, f'\n\n{reference[code]}')
 
@@ -1131,6 +1357,21 @@ def main():
     # Other
     global root
     root = tk.Tk()
+
+    # Set DPI awareness level
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)  # PROCESS_SYSTEM_DPI_AWARE
+    except AttributeError:
+        pass 
+
+    # root window size
+
+    window_width = 1600
+    window_height = 700
+    x_position = (root.winfo_screenwidth() - window_width) // 2
+    y_position = (root.winfo_screenheight() - window_height) // 2
+    root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
     root.title("Tree Explorer")
     root.configure(background="lightgrey")
     app = Application(root)
@@ -1139,13 +1380,12 @@ def main():
     # Building text box
     global text_box
     scrollbar = tk.Scrollbar(app, command=scroll_text) # Adding Y-axis scrollbar and configuring
-    text_box = tk.Text(app, width = 130, height = 32, yscrollcommand=scrollbar.set)
+    text_box = tk.Text(app, width = 120, height = 32, yscrollcommand=scrollbar.set)
     scrollbar.config(command=text_box.yview)
     text_box.grid(row = 0, column = 4, columnspan = 4, rowspan=40, pady=(15,10))
-    text_box.configure(font=("Helvetica", 12, "italic"), highlightthickness=1, highlightbackground="black", relief="solid", background="#F0F0F0")
+    text_box.configure(font=("Helvetica", 16, "italic"), highlightthickness=1, highlightbackground="black", relief="solid", background="#F0F0F0")
     scrollbar.grid(row=0, column=10, sticky='ns')
     text_box.insert(tk.END, "Welcome to Tree Explorer.\n\nPlease upload genogroup and tree files to get started. \n\nClick 'About' for more information.")
-
     root.mainloop()
 
 if __name__ == '__main__':

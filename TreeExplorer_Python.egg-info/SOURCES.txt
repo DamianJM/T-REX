@@ -1,3 +1,4 @@
+LICENSE
 README.md
 setup.py
 TreeExplorer_Python.egg-info/PKG-INFO
