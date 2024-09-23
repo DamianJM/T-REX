@@ -1,10 +1,12 @@
-# T-REX     ![TREX logo](https://raw.githubusercontent.com/DamianJM/T-REX/main/img/repo_logo.png)
+# T-REX     
             
 ### Tree Explorer (T-REX) - A phylogenetic tree exploration and query tool
 
 T-REX was created in response to requests to be able to easily link phylogenetic and phenotypic information together and yield insights from this. 
 This package consists of a GUI-enabled phylogenetic tree viewer and manipulator into which users can link information on biological organisms
 and perform queries to find individuals of interest.
+
+![TREX logo](https://raw.githubusercontent.com/DamianJM/T-REX/main/img/repo_logo.png)
 
 Features will be added over time to this open source project.
 
