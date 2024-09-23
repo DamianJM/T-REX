@@ -71,7 +71,7 @@ class Application(tk.Frame, tk.Text):
 
         # Load the logo image and resize it
         logo_image = Image.open("./img/iff_logo.png")
-        logo_image = logo_image.resize((250, 200), Image.ANTIALIAS)  # Adjust the desired size
+        logo_image = logo_image.resize((250, 200), Image.LANCZOS)  # Adjust the desired size
 
         # Convert the resized image to PhotoImage
         logo_image = ImageTk.PhotoImage(logo_image)
@@ -514,6 +514,7 @@ class Application(tk.Frame, tk.Text):
             update_button_styles() 
 
             # Update button styles based on the selected option
+        
         def update_button_styles():
             for button in buttons:
                 button.configure(**button_styles["normal"])  # Reset all buttons to normal style
