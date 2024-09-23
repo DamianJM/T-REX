@@ -1,4 +1,4 @@
-# T-REX     ![TREX logo](https://raw.githubusercontent.com/DamianJM/T-REX/main/img/iff_logo.png)
+# T-REX     ![TREX logo](https://raw.githubusercontent.com/DamianJM/T-REX/main/img/repo_logo.png)
             
 ### Tree Explorer (T-REX) - A phylogenetic tree exploration and query tool
 
