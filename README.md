@@ -15,11 +15,12 @@ Features will be added over time to this open source project.
 - INSTALLATION
  
 - USAGE
-    - Usage
-    - Colour Leaf Queries
-    - Adding Custom Labels
-    - Heatmaps
-    - Explanations for Each Button
+    - [Usage](Usage)
+    - [Colour Leaf Queries](Colour-Leaf-Queries)
+    - [Adding Custom Labels](Adding-Custom-Labels)
+    - [Heatmaps](Heatmaps)
+    - [Explanations For Each Button](Explanations-For-Each-Button)
+    - [Other Tools Menu](Other-Tools-Menu)
 
 
 # INSTALLATION
@@ -99,7 +100,7 @@ This can be presence/absence info of type +/- for example when dealing with gene
 You may also upload raw numeric data which will be displayed accordingly. E.g. raw measures.
 After upload click to apply the heatmap and select the desired formatting options (e.g. grayscale or remove column names etc)
 
-##### Explanations for Each Button
+##### Explanations For Each Button
 
 Upload Genomap: To upload your table containing strain names and characteristics of interest.
 Upload Tree File: To upload your phylogenetic tree in newick format.
