@@ -1,5 +1,12 @@
 # T-REX
-Tree Explorer (T-REX) - A phylogenetic tree exploration and query tool
+### Tree Explorer (T-REX) - A phylogenetic tree exploration and query tool
+
+T-REX was created in response to requests to be able to easily link phylogenetic and phenotypic information together and yield insights from this. 
+This package consists of a GUI-enabled phylogenetic tree viewer and manipulator into which users can link information on biological organisms
+and perform queries to find individuals of interest.
+
+Features will be added over time to this open source project.
+
 
 # Installation
 
@@ -31,7 +38,7 @@ A pre-compiled binary for windows has been provided. Simply download to a locati
 Software package enabling the labelling of phylogenetic trees
 using information derived from genomap tables.
 
-Usage:
+##### Usage:
 
 Step 1: Upload phenotype file in csv format ensuring first column contains identifiers
 Step 2: Perform label selection BEFORE uploading tree file. Tree labels are modified following upload
@@ -43,7 +50,7 @@ Step 6: Click 'Show Tree' to display and explore the result
 
 Click 'Reset' to start a new analysis and 'Exit' to quit the program
 
-Colour Leaf Queries
+##### Colour Leaf Queries
 
 A basic tool has been added which allows the user to search for specific characteristics and colour those accordingly.
 In order to do this, you must enter queries in a specific form as follows: LABEL=1 AND LABEL=2 AND COLOUR=X
@@ -65,19 +72,20 @@ This functionality is quite sensitive so whilst you will be informed of some mis
 When the tree is displayed strains matching the search criteria will be coloured. This function is at an early stage and can be expanded depending on user feedback.
 
 
-Adding Custom Labels
+##### Adding Custom Labels
 
 You are not limited to using preset options in the phenotype file. You are free to add as many as you want. Simply open the file and add the column header and relevant values that you want.
 There is no limit though if possible avoid unusual characters or symbols in label headers and values.
 
-Heatmaps
+##### Heatmaps
+
 An additional functionality allows for the addition of heatmaps to phylogenetic trees.
 To use this you need to upload a file with the genome identifiers and the various information you wish to display
 This can be presence/absence info of type +/- for example when dealing with genes.
 You may also upload raw numeric data which will be displayed accordingly. E.g. raw measures.
 After upload click to apply the heatmap and select the desired formatting options (e.g. grayscale or remove column names etc)
 
-Explanations for Each Button
+##### Explanations for Each Button
 
 Upload Genomap: To upload your table containing strain names and characteristics of interest.
 Upload Tree File: To upload your phylogenetic tree in newick format.
@@ -97,8 +105,7 @@ Upload HM: Upload you heatmap file if desired.
 Activate HM: apply formatting and show heatmap.
 Other Tools: Display menu containing other tools.
 
-Other Tools Menu
-
+##### Other Tools Menu
 
 Export labelled data: Output labelled data to csv file for colour coded strains.
 Tree Name Export: Extracts tree names into a text file. Useful if you have a tree only and want to construct a genomap type file
@@ -107,11 +114,11 @@ Change Tree Topology: Toggle rectangular and circular forms of tree.
 Export Tree File: Export raw tree file for other uses (labels also exported)
 Close Window: Closes this tool box
 
-Troubleshooting
+##### Troubleshooting
 
 Will be filled with resolutions as users report challenges in using program
 
 If you are generally pleased with this software but have some things you would like
 to see included or changed, do not hesitate to get in contact!
 
-Support/Requests/Questions: damian.magill@iff.com
+#### Support/Requests/Questions: damian.magill@iff.com
