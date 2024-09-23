@@ -679,7 +679,13 @@ class Application(tk.Frame, tk.Text):
         menu.delete(0, 'end')
         for i, r in df.iterrows():
             # Add menu items
-            x = r["GenomeID"]
+            try:
+                if "GenomeID" in df.columns:
+                    x = r["GenomeID"]
+                else:
+                    x = r.iloc[0]
+            except IOError:
+                self.call_error(9) # call error on genome ID
             menu.add_command(label=x, command=lambda x=x: var.set(x))
         var.trace("w", self.StrainSelector)
         return menu
@@ -707,21 +713,29 @@ class Application(tk.Frame, tk.Text):
             text_box.insert(tk.END, '\n' + temp + ' already selected!') 
 
     # Subset genogroups method
-    def subset(self, df, subList): #ADJUST WITH SELECTED VALUES
+    def subset(self, df, subList): # ADJUST WITH SELECTED VALUES
         """Function applying subset values to return new DF"""
-        #add function to read in sublist
+        # add function to read in sublist
         id = df.columns.values.tolist()[0]
         subList.insert(0, id)
         self.newdf = df.filter(subList, axis=1)
-        #create new row which will be tree label
+        # create new row which will be tree label
         self.newdf['Label'] = self.newdf[[col for col in self.newdf.columns]].agg(' // '.join, axis=1)
         return self.newdf
 
     # Modify Newick tree labels according to genogroup selections & return tree object
     def newickModify(self, tree, newdf):
         IDList, Labels = [],[]
+        if "GenomeID" not in newdf.columns:
+            text_box.insert(tk.END, "\n\nGenomeID column not detected. Attempting extraction nonetheless...")
         for i, j in newdf.iterrows():
-            IDList.append(j["GenomeID"])
+            try:
+                if "GenomeID" in newdf.columns:
+                    IDList.append(j["GenomeID"]) # extract genome ID
+                else:
+                    IDList.append(j.iloc[0]) # extract first column if genome ID not present
+            except IOError:
+                self.call_error(9) # call error for genome ID problems
             Labels.append(j["Label"])
         for idx, item in enumerate(IDList):
             self.reference.update({str(item):str(Labels[idx])})
@@ -1095,7 +1109,8 @@ class Application(tk.Frame, tk.Text):
             5:"Something went wrong. Please check that your file is in Newick format.",
             6:"No tree uploaded! Cannot perform function!",
             7:"No heatmap uploaded! Cannot perform function!",
-            8:"File not valid. Please upload file in Excel or csv format. If problems persist get in touch."
+            8:"File not valid. Please upload file in Excel or csv format. If problems persist get in touch.",
+            9:"Issue with GenomeID Extraction. Ensure that IDs matching tree branch names are in the first column of the table. You can extract these from your tree using the other tools section"
         }
         text_box.insert(tk.END, f'\n\n{reference[code]}')
 
