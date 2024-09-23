@@ -12,15 +12,15 @@ Features will be added over time to this open source project.
 
 # TABLE OF CONTENTS
 
-- INSTALLATION
+- [Usage](#INSTALLATION)
  
-- USAGE
-    - [Usage](Usage)
-    - [Colour Leaf Queries](Colour-Leaf-Queries)
-    - [Adding Custom Labels](Adding-Custom-Labels)
-    - [Heatmaps](Heatmaps)
-    - [Explanations For Each Button](Explanations-For-Each-Button)
-    - [Other Tools Menu](Other-Tools-Menu)
+- [USAGE](#USAGE)
+    - [Usage](#Usage)
+    - [Colour Leaf Queries](#Colour-Leaf-Queries)
+    - [Adding Custom Labels](#Adding-Custom-Labels)
+    - [Heatmaps](#Heatmaps)
+    - [Explanations For Each Button](#Explanations-For-Each-Button)
+    - [Other Tools Menu](#Other-Tools-Menu)
 
 
 # INSTALLATION
