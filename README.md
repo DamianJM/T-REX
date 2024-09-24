@@ -117,7 +117,7 @@ After upload click to apply the heatmap and select the desired formatting option
 
 Below is an example visualisation for both the query and heatmap functionalities:
 
-![TREX Figure](https://raw.githubusercontent.com/DamianJM/T-REX/blob/main/paper/figure1.png)
+![TREX Figure](https://raw.githubusercontent.com/DamianJM/T-REX/main/paper/figure1.png)
 
 ##### Explanations For Each Button
 
