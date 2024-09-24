@@ -114,6 +114,11 @@ This can be presence/absence info of type +/- for example when dealing with gene
 You may also upload raw numeric data which will be displayed accordingly. E.g. raw measures.
 After upload click to apply the heatmap and select the desired formatting options (e.g. grayscale or remove column names etc)
 
+
+Below is an example visualisation for both the query and heatmap functionalities:
+
+![TREX Figure](https://raw.githubusercontent.com/DamianJM/T-REX/blob/main/paper/figure1.png)
+
 ##### Explanations For Each Button
 
 Upload Genomap: To upload your table containing strain names and characteristics of interest.
