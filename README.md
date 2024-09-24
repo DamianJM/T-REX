@@ -68,8 +68,18 @@ Click 'Reset' to start a new analysis and 'Exit' to quit the program
 ##### Colour Leaf Queries
 
 A basic tool has been added which allows the user to search for specific characteristics and colour those accordingly.
-In order to do this, you must enter queries in a specific form as follows: LABEL=1 AND LABEL=2 AND COLOUR=X
-for example to highlight strains in yellow that contain gene g1 (with 1/0 notation) you enter: g1_1 AND yellow.
+In order to do this, you must enter queries in a specific form as follows: 
+
+```
+LABEL=1 AND LABEL=2 AND COLOUR=X
+```
+
+for example to highlight strains in yellow that contain gene g1 (with 1/0 notation) you enter: 
+
+```
+g1_1 AND yellow
+```
+
 The label entered reflects the structure of the genomap file so change this accordingly.
 
 Multiple queries can also be performed along with more complex requests such as searching for ranges if columns contain numerical data.
@@ -80,7 +90,11 @@ pH=(L,5) search for pH less than 5
 pH=(4,5) search for pH between 4 and 5
 
 All these queries can be combined for example: 
+
+```
 G1=1 AND pH=(L,5) AND DoublingTime=(20,25) AND colour=yellow
+```
+
 Will find g1 containing strains with pH less than 5, and a doubling time between 20 and 25 minutes.
 
 This functionality is quite sensitive so whilst you will be informed of some mistakes it is possible that in some cases the absence of highlighting is due to an unusual error. So be careful.
