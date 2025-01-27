@@ -37,6 +37,7 @@ class Application(tk.Frame, tk.Text):
         self.collapseStatus: bool = False # For tree collapse application
         self.colourStatus: bool = False # For colour labelling application
         self.colourstrainStatus: bool = False # For strain colouring application
+        self.colourliststrainStatus: bool = False # For strain colouring from file
         self.heatmapStatus: bool = False # For applying heatmap
         self.heatmapGray: bool = False # For grayscale HM
         self.heatmapBlue: bool = False # For blue/red heatmap (better for value only)
@@ -59,6 +60,12 @@ class Application(tk.Frame, tk.Text):
         self.heatmapfaces: int = 0 # For heatmap modifications
 
         self.value = None # For queries
+        self.value2 = None # For queries
+        self.value3 = None # For queries
+        self.value4 = None # For queries
+        self.value5 = None # For queries
+        self.values = [] # to store multiple queries
+        self.processed_values = [] # to store final queries post processing
 
         self.df: str = "" # Initial dataframe
         self.new_df: str = "" # Processed dataframe
@@ -696,9 +703,9 @@ class Application(tk.Frame, tk.Text):
         self.extra_buttons = []
 
         button_names = ["EXPORT LABELLED DATA", "TREE NAME EXPORT", "TREE NAME EXCHANGE", "CHANGE TREE TOPOLOGY",
-                        "EXPORT TREE FILE" , "SHOW/RENDER TREE", "CLOSE WINDOW"]
+                        "EXPORT TREE FILE" , "SHOW/RENDER TREE", "COLOUR STRAINS", "CLOSE WINDOW"]
         button_commands = [self.export_labelled, self.export_treenames, self.tree_exchange, self.tree_topology,
-                           self.export_tree, self.render_tree, close]
+                           self.export_tree, self.render_tree, self.strainColourList, close]
 
         for i, text in enumerate(button_names):
             if text != "CLOSE WINDOW":
@@ -792,6 +799,22 @@ class Application(tk.Frame, tk.Text):
             heatmap_data.append(data)
 
         return heatmap_data
+
+    def getStrainsColours(self, df):
+        ALLOWED = ["Colour", "colour", "Color", "color"]
+        for i, r in df.iterrows():
+            # Add menu items
+            try:
+                if "GenomeID" in df.columns:
+                    x = r["GenomeID"]
+                else:
+                    x = r.iloc[0]
+                if "Colour" in df.columns:
+                    y = r["Colour"]
+
+            except IOError:
+                self.call_error(11) # call error on genome ID or colours
+
 
     # Performs update of genogroup menu providing select options and click traces
     def UpdateMenuGeno(self, menu, var, df):
@@ -909,19 +932,36 @@ class Application(tk.Frame, tk.Text):
     def open_custom_dialog(self):
         """Custom dialog box for queries"""
         self.dialog = tk.Toplevel(root)
-        self.dialog.geometry("500x250")
-        label = tk.Label(self.dialog, text="Enter your search query:")
+        self.dialog.geometry("500x350")
+
+        label = tk.Label(self.dialog, text="Enter one or more search queries:")
         label.pack()
-        self.entry = tk.Entry(self.dialog, width=75)
-        self.entry.pack()
+
+        self.entries = {}
+        for i in range(1, 8):
+            frame = tk.Frame(self.dialog)
+            frame.pack(fill=tk.X, padx=5, pady=5)
+
+            label = tk.Label(frame, text=f"Query {i}:")
+            label.pack(side=tk.LEFT)
+
+            entry = tk.Entry(frame, width=75)
+            entry.pack(side=tk.LEFT)
+            setattr(self, f'entry{i}', entry)
+
         submit_button = tk.Button(self.dialog, text="Submit", command=self.submit_input)
         submit_button.pack()
 
-    # Get queries input from dialogue box
+    # get and process queries from boxes
     def submit_input(self):
         """Get input from query and pass to function"""
-        self.value = self.entry.get()
-        text_box.insert(tk.END, f'\n\nYou entered: \"{self.value}\"')
+        self.clearColor() # remove colours of previous queries
+        entries = [self.entry1, self.entry2, self.entry3, self.entry4, self.entry5, self.entry6, self.entry7]
+        self.values = [entry.get() for entry in entries if entry.get()]
+
+        for j, value in enumerate(self.values, start=1):
+            text_box.insert(tk.END, f'\n\nYou entered: "{value}" for query {j}')
+
         self.dialog.destroy()
         self.process_value()
 
@@ -939,23 +979,27 @@ class Application(tk.Frame, tk.Text):
     # Process query values
     def process_value(self):
         """Process query"""
-        if self.value:
-            #Perform some quality checks
-            self.qualitycheck(self.value)
-            #Process input
-            self.value = self.value.replace("=", "_").replace("and", "AND") # to also accept = nomenclature
-            self.value = self.value.split(sep=" AND ")
-            if len(self.value) == 1:
-                self.value.append("#FEE715")
-            self.colourStatus = True
-            return self.value
-        else:
-            text_box.insert(tk.END, "\nPlease enter label names and colour if you wish to add colour coding to the tree.")
+        for value in self.values:
+            if value:
+                #Perform some quality checks
+                self.qualitycheck(value)
+                #Process input
+                value = value.replace("=", "_").replace("and", "AND") # to also accept = nomenclature
+                value = value.split(sep=" AND ")
+                if len(value) == 1:
+                    value.append("#FEE715")
+                self.processed_values.append(value)
+                self.colourStatus = True
+            else:
+                text_box.insert(tk.END, "\nPlease enter label names and colour if you wish to add colour coding to the tree.")
+            
+        return self.processed_values
 
     # Tied to button to open dialg box
     def colourlabel(self):
         """Dialog box for queries"""
-        self.value = None # Reset to allow new queries
+        self.value, self.value2, self.value3, self.value4, self.value5  = None, None, None, None, None # Reset to allow new queries
+        self.values = []
         self.open_custom_dialog()
     
     # Method to deal with range queries
@@ -989,39 +1033,40 @@ class Application(tk.Frame, tk.Text):
                 print("Data type Error!")      
 
     # Methods passed here to conduct actual leaf colouring
-    def colorLeaves(self, node, value):
+    def colorLeaves(self, node, values):
     # Define the condition to determine leaf colors
         colourvals = ("COLOUR", "COLOR", "COL")
-        if not any("(" in i for i in value[0:len(value)-1]): # this block runs if no complex queries are written. This limits possibility of errors.
-            if all(i.upper() in node.name.upper() for i in value[0:len(value)-1]):
-                if any(i for i in colourvals if i in value[-1].upper()):
-                    temp = value[-1].split("_")[1]
-                    node.img_style["bgcolor"] = temp
-                else:
-                    node.img_style["bgcolor"] = value[-1]
+        for value in values:
+            if not any("(" in i for i in value[0:len(value)-1]): # this block runs if no complex queries are written. This limits possibility of errors.
+                if all(i.upper() in node.name.upper() for i in value[0:len(value)-1]):
+                    if any(i for i in colourvals if i in value[-1].upper()):
+                        temp = value[-1].split("_")[1]
+                        node.img_style["bgcolor"] = temp
+                    else:
+                        node.img_style["bgcolor"] = value[-1]
+                #else:
+                 #   node.img_style["bgcolor"] = "white"
+            #Add logic to deal with ranges 
             else:
-                node.img_style["bgcolor"] = "white"
-        #Add logic to deal with ranges 
-        else:
-            valuetest = [i.split("_") for i in value[0:len(value)-1]]
-            nodetest = [x.split("_") for x in node.name.upper().split(" // ")[1:]] # create list of lists dividing each label with its corresponding value
-            valid = [False for i in range(0, len(value)-1)] #need to validate all search criteria in order to colour branch
-            for i, item in enumerate(valuetest):
-                for j in nodetest:
-                    if item[0].upper() == j[0].upper() and "(" not in item[1]: # Evaluate non-complex values as direct comparisons
-                        if item[1].upper() == j[1].upper():
-                            valid[i] = True
-                    elif item[0].upper() == j[0].upper() and "(" in item[1]: # Evaluate complex expressions with range function
-                        if self.evaluateRange(j, item):
-                            valid[i] = True
-            if all(valid): #Colour only if all requested conditions are met
-                if any(i for i in colourvals if i in value[-1].upper()):
-                    temp = value[-1].split("_")[1]
-                    node.img_style["bgcolor"] = temp
-                else:
-                    node.img_style["bgcolor"] = value[-1]
-            else:
-                node.img_style["bgcolor"] = "white"
+                valuetest = [i.split("_") for i in value[0:len(value)-1]]
+                nodetest = [x.split("_") for x in node.name.upper().split(" // ")[1:]] # create list of lists dividing each label with its corresponding value
+                valid = [False for i in range(0, len(value)-1)] #need to validate all search criteria in order to colour branch
+                for i, item in enumerate(valuetest):
+                    for j in nodetest:
+                        if item[0].upper() == j[0].upper() and "(" not in item[1]: # Evaluate non-complex values as direct comparisons
+                            if item[1].upper() == j[1].upper():
+                                valid[i] = True
+                        elif item[0].upper() == j[0].upper() and "(" in item[1]: # Evaluate complex expressions with range function
+                            if self.evaluateRange(j, item):
+                                valid[i] = True
+                if all(valid): #Colour only if all requested conditions are met
+                    if any(i for i in colourvals if i in value[-1].upper()):
+                        temp = value[-1].split("_")[1]
+                        node.img_style["bgcolor"] = temp
+                    else:
+                        node.img_style["bgcolor"] = value[-1]
+                #else:
+                #    node.img_style["bgcolor"] = "white"
 
     # Remove all colour formatting
     def clearColor(self):
@@ -1066,6 +1111,34 @@ class Application(tk.Frame, tk.Text):
         for i in self.strainList:
             if i in node.name:
                 node.img_style["bgcolor"] = "#FEE715"
+
+    def strainColourList(self):
+        """Import file to colour strain names"""
+        filename = filedialog.askopenfilename()
+        if filename:
+            if "csv" or "xls" in filename:
+                text_box.insert(tk.END, '\n\nSelected: ' + str(filename))
+                #Data processing
+                if "csv" in filename:
+                    color_strain_df = pd.read_csv(filename, encoding="ISO-8859-1", header=None)
+                else:
+                    color_strain_df = pd.read_excel(filename, header=None)
+        else:
+            self.call_error(10) # file input error
+            
+        # strain - colour dictionary
+        try:
+            colour_strain = dict(color_strain_df.values)
+            colour_strain = {k: "#FFFFFF" if pd.isna(v) or v in ('NaN', 'nan') else v for k, v in colour_strain.items()}
+
+            for leaf in self.LTree.iter_leaves():
+                for i in colour_strain.keys():
+                    if i in leaf.name:
+                        leaf.img_style["bgcolor"] = colour_strain.get(i)
+                        
+            text_box.insert(tk.END, '\n\nStrain colouring has been performed. Verify tree!')
+        except:
+            self.call_error(12) # file processing error
 
     # Export labelled information to external file
     def export_labelled(self):
@@ -1247,7 +1320,7 @@ class Application(tk.Frame, tk.Text):
 
             if self.colourStatus:
                 for leaf in self.LTree.iter_leaves():
-                    self.colorLeaves(leaf, self.value)
+                    self.colorLeaves(leaf, self.processed_values)
             
             # Apply strain colouring if selected
 
@@ -1336,7 +1409,8 @@ class Application(tk.Frame, tk.Text):
             8:"File not valid. Please upload file in Excel or csv format. If problems persist get in touch.",
             9:"Not possible to extract names due to absence of tree file. Please verify upload.",
             10:"Problem with file upload. Verify that you have simply two columns: old names and new names.",
-            11:"Issue with GenomeID Extraction. Ensure that IDs matching tree branch names are in the first column of the table. You can extract these from your tree using the other tools section"
+            11:"Issue with GenomeID Extraction. Ensure that IDs matching tree branch names are in the first column of the table. You can extract these from your tree using the other tools section",
+            12:"Problem with strain colouring. This is most likely due to an invalid colour value or wrong formatting of the input file."
         }
         text_box.insert(tk.END, f'\n\n{reference[code]}')
 
