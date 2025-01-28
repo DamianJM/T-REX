@@ -28,7 +28,7 @@ Features will be added over time to this open source project.
 #### The simplest way to install T-REX is to run the following:
 
 ```bash
-pip install TreeExplorer-Python==1.2
+pip install TreeExplorer-Python==1.3
 ```
 
 Then simply:
