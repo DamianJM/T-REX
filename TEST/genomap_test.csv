@@ -1,0 +1,18 @@
+GenomeID,G1,G2,G3,pH,Lysotype,Doubling Time,Colony_Size
+Strain_A,1,1,0,4.3,A,21,7
+Strain_B,1,0,0,4.7,A,20,6
+Strain_C,1,0,0,4.3,A,19,2
+Strain_D,1,1,0,4.9,A,17,4
+Strain_E,1,1,0,4.1,H,24,6
+Strain_F,1,1,0,5.2,I,24,5
+Strain_G,1,0,0,4.8,B,27,9
+Strain_H,1,0,0,4.5,B,26,10
+Strain_I,1,0,1,4.6,B,20,4
+Strain_J,1,1,1,4.6,F,21,5
+Strain_K,1,1,0,4.9,G,20,6
+Strain_L,1,1,0,5.1,C,18,8
+Strain_M,1,0,0,5.7,C,23,4
+Strain_N,0,0,1,5.4,E,25,7
+Strain_O,0,0,1,5.3,E,31,8
+Strain_P,1,0,1,4.5,D,32,8
+Strain_Q,1,0,1,5.1,D,19,4
