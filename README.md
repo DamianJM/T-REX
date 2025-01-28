@@ -142,12 +142,13 @@ Other Tools: Display menu containing other tools.
 ##### Other Tools Menu
 
 Export labelled data: Output labelled data to csv file for colour coded strains.
-Tree Name Export: Extracts tree names into a text file. Useful if you have a tree only and want to construct a genomap type file
+Tree Name Export: Extracts tree names into a text file. Useful if you have a tree only and want to construct a genomap type file.
 Tree Name Exchange: Upload a file with old and new times to swap those in the tree.
 Change Tree Topology: Toggle rectangular and circular forms of tree.
-Export Tree File: Export raw tree file for other uses (labels also exported)
-Toggle Show/Render: Allow for direct image output instead of showing tree interactively (may be useful for excessively large trees)
-Close Window: Closes this tool box
+Export Tree File: Export raw tree file for other uses (labels also exported).
+Toggle Show/Render: Allow for direct image output instead of showing tree interactively (may be useful for excessively large trees).
+Colour Strain: Upload a file containing names present in trees along with pre-defined colours to allow direct colouring.
+Close Window: Closes this tool box.
 
 ##### Troubleshooting
 
