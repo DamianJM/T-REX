@@ -32,6 +32,7 @@ class Application(tk.Frame, tk.Text):
 
         self.subList: list = []  # Subsetting list for labels
         self.strainList: list = [] # Strain selection
+        self.genomaplist: list = [] # column headers from genomap file
         self.reference: dict = {} # Allows to retrieve strains from labels
         self.pruneStatus: bool = False # For tree pruning application
         self.collapseStatus: bool = False # For tree collapse application
@@ -431,6 +432,8 @@ class Application(tk.Frame, tk.Text):
         self.W1.insert(tk.END, "\nTree Name Exchange: Upload a file with old and new times to swap those in the tree.")
         self.W1.insert(tk.END, "\nChange Tree Topology: Toggle rectangular and circular forms of tree.")
         self.W1.insert(tk.END, "\nExport Tree File: Export raw tree file for other uses (labels also exported)")
+        self.W1.insert(tk.END, "\nShow/Render Tree: Toggle output between interactive view and output to file")
+        self.W1.insert(tk.END, "\nColour Strain: Upload external file containing strain names and preset colours to pre-colour tree")
         self.W1.insert(tk.END, "\nClose Window: Closes this tool box")
         
 
@@ -473,8 +476,10 @@ class Application(tk.Frame, tk.Text):
 
             #Modification of DF values to provide meaningful labels for the tree (e.g. Prts-1 instead of simply 1)
             for i in colnames:
+                self.genomaplist.append(i)
                 self.df[i] = str(i).replace('(','').replace(')','') + "_" + self.df[i].astype(str).replace("nan", "NONE") 
-            text_box.insert(tk.END, '\n\nPlease apply subsetting before tree upload if desired.')
+            text_box.insert(tk.END, '\n\nPlease apply subsetting by selecting labels before tree upload if desired.')
+            
         else:
             text_box.insert(tk.END, "Please upload a genomap and/or tree file to get started.")
     
@@ -854,8 +859,10 @@ class Application(tk.Frame, tk.Text):
             self.subList.append(temp)
             text_box.delete(1.0,tk.END)
             text_box.insert(tk.END, '\nSelected: ' + ", ".join(self.subList))
+            text_box.insert(tk.END, '\n\nOnce finished. Upload the tree file to apply modifications')
         else:
             text_box.insert(tk.END, '\n' + temp + ' already selected!') 
+            text_box.insert(tk.END, '\n\nOnce finished. Upload the tree file to apply modifications')
 
     # Updates list with strain selections for ltree collapse
     def StrainSelector(self, *args):
@@ -968,13 +975,15 @@ class Application(tk.Frame, tk.Text):
     # Check that queries conform to what is expected and provide approriate warnings
     def qualitycheck(self, input):
         """Performs series of quality checks on query inputs"""
-        COMMONCOLOURS = ["RED", "YELLOW", "GREEN", "BLUE", "BLACK", "ORANGE", "PINK", "BROWN", "GRAY", "#"]
-        if "AND" not in input.upper():
+        COMMONCOLOURS = ["RED", "YELLOW", "GREEN", "BLUE","BLACK", "ORANGE", "PINK", "BROWN", "GRAY", "#", "LIGHT", "DARK"]
+        if "AND" not in input.upper(): # check presence of conjunctions
             self.call_error(2)
-        if not any(i for i in COMMONCOLOURS if i in input.upper()):
+        if not any(i for i in COMMONCOLOURS if i in input.upper()): # basic check for valid colours
             self.call_error(3)
-        if "=" not in input.upper():
+        if not any(i for i in self.genomaplist if i in input.upper()): # check that valid labels exist in query
             self.call_error(4)
+        if "=" not in input.upper(): # check presence of =
+            self.call_error(13)
 
     # Process query values
     def process_value(self):
@@ -1065,8 +1074,8 @@ class Application(tk.Frame, tk.Text):
                         node.img_style["bgcolor"] = temp
                     else:
                         node.img_style["bgcolor"] = value[-1]
-                #else:
-                #    node.img_style["bgcolor"] = "white"
+               # else:
+               #     node.img_style["bgcolor"] = "white"
 
     # Remove all colour formatting
     def clearColor(self):
@@ -1410,7 +1419,8 @@ class Application(tk.Frame, tk.Text):
             9:"Not possible to extract names due to absence of tree file. Please verify upload.",
             10:"Problem with file upload. Verify that you have simply two columns: old names and new names.",
             11:"Issue with GenomeID Extraction. Ensure that IDs matching tree branch names are in the first column of the table. You can extract these from your tree using the other tools section",
-            12:"Problem with strain colouring. This is most likely due to an invalid colour value or wrong formatting of the input file."
+            12:"Problem with strain colouring. This is most likely due to an invalid colour value or wrong formatting of the input file.",
+            13:"Warning! '=' sign appears to be missing from input query.\nPlease try to run and check if there are problems."
         }
         text_box.insert(tk.END, f'\n\n{reference[code]}')
 
