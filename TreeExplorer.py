@@ -634,7 +634,7 @@ class Application(tk.Frame, tk.Text):
 
         # new window
         toolwindow = tk.Toplevel(self, bg="lightgrey")
-        toolwindow.geometry("290x550")
+        toolwindow.geometry("290x600")
 
         # Load the logo image and resize it
         logo_image = Image.open("./img/iff_logo.png")
@@ -708,9 +708,9 @@ class Application(tk.Frame, tk.Text):
         self.extra_buttons = []
 
         button_names = ["EXPORT LABELLED DATA", "TREE NAME EXPORT", "TREE NAME EXCHANGE", "CHANGE TREE TOPOLOGY",
-                        "EXPORT TREE FILE" , "SHOW/RENDER TREE", "COLOUR STRAINS", "CLOSE WINDOW"]
+                        "EXPORT TREE FILE" , "SHOW/RENDER TREE", "COLOUR STRAINS", "BATCH QUERY", "CLOSE WINDOW"]
         button_commands = [self.export_labelled, self.export_treenames, self.tree_exchange, self.tree_topology,
-                           self.export_tree, self.render_tree, self.strainColourList, close]
+                           self.export_tree, self.render_tree, self.strainColourList, self.batchQueryFile, close]
 
         for i, text in enumerate(button_names):
             if text != "CLOSE WINDOW":
@@ -971,6 +971,28 @@ class Application(tk.Frame, tk.Text):
 
         self.dialog.destroy()
         self.process_value()
+
+    # Batch query from file
+    def batchQueryFile(self):
+        """Import file of batch queries"""
+        if len(self.subList) != 0:
+            filename = filedialog.askopenfilename()
+            if filename:
+                if "txt" in filename:
+                    text_box.insert(tk.END, '\n\nSelected: ' + str(filename))
+                    with open(str(filename), "r") as f:
+                        self.values = [l.strip("\n") for l in f.readlines()]
+                        for j, value in enumerate(self.values, start=1):
+                            text_box.insert(tk.END, f'\n\nYou batch entered: "{value}" for query {j}')
+                        self.process_value()  
+                else:
+                    self.call_error(15)
+            else:
+                self.call_error(15)
+        else:
+            self.call_error(14)
+
+
 
     # Check that queries conform to what is expected and provide approriate warnings
     def qualitycheck(self, input):
@@ -1420,7 +1442,9 @@ class Application(tk.Frame, tk.Text):
             10:"Problem with file upload. Verify that you have simply two columns: old names and new names.",
             11:"Issue with GenomeID Extraction. Ensure that IDs matching tree branch names are in the first column of the table. You can extract these from your tree using the other tools section",
             12:"Problem with strain colouring. This is most likely due to an invalid colour value or wrong formatting of the input file.",
-            13:"Warning! '=' sign appears to be missing from input query.\nPlease try to run and check if there are problems."
+            13:"Warning! '=' sign appears to be missing from input query.\nPlease try to run and check if there are problems.",
+            14:"A valid genomap file and tree must be present in order to run queries. Please also ensure you have selected desired labels.",
+            15:"Error! Problem with file input. Ensure you have a text file with individual queries on each line"
         }
         text_box.insert(tk.END, f'\n\n{reference[code]}')
 
