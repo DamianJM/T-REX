@@ -434,6 +434,7 @@ class Application(tk.Frame, tk.Text):
         self.W1.insert(tk.END, "\nExport Tree File: Export raw tree file for other uses (labels also exported)")
         self.W1.insert(tk.END, "\nShow/Render Tree: Toggle output between interactive view and output to file")
         self.W1.insert(tk.END, "\nColour Strain: Upload external file containing strain names and preset colours to pre-colour tree")
+        self.W1.insert(tk.END, "\nBatch Query: Upload text file containing pre-made queries for large scale processing")
         self.W1.insert(tk.END, "\nClose Window: Closes this tool box")
         
 

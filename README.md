@@ -148,6 +148,7 @@ Change Tree Topology: Toggle rectangular and circular forms of tree.
 Export Tree File: Export raw tree file for other uses (labels also exported).
 Toggle Show/Render: Allow for direct image output instead of showing tree interactively (may be useful for excessively large trees).
 Colour Strain: Upload a file containing names present in trees along with pre-defined colours to allow direct colouring.
+Batch Query: Provide queries in a text file for large scale searches in a practical manner.
 Close Window: Closes this tool box.
 
 ##### Troubleshooting
