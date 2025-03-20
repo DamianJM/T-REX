@@ -98,7 +98,11 @@ G1=1 AND pH=(L,5) AND DoublingTime=(20,25) AND colour=yellow
 Will find g1 containing strains with pH less than 5, and a doubling time between 20 and 25 minutes.
 
 This functionality is quite sensitive so whilst you will be informed of some mistakes it is possible that in some cases the absence of highlighting is due to an unusual error. So be careful.
-When the tree is displayed strains matching the search criteria will be coloured. This function is at an early stage and can be expanded depending on user feedback.
+When the tree is displayed strains matching the search criteria will be coloured. 
+
+Users have the possiblility to enter multiple queries that will be executed in turn. Note that subsequent queries if overlapping with previous ones will overwrite previously applied colours so keep this in mind when constructing them.
+
+Users additionally have the ability to upload a pre-made file containing and unlimited number of queries. This is the preferred option if three or more are required as it allows for easy editing.
 
 
 ##### Adding Custom Labels
