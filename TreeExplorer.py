@@ -16,9 +16,8 @@ import tkinter.scrolledtext as tkst
 from tkinter import PhotoImage
 from tkinter.messagebox import askyesno
 from PIL import Image, ImageTk
-
 from tkinter import ttk
-
+import os
 import ctypes # Needed for dpi reset
 
 class Application(tk.Frame, tk.Text):
@@ -77,7 +76,7 @@ class Application(tk.Frame, tk.Text):
         self.hmrows: list = [] # rows
 
         self.toggle: int = 0 # for toggling below options
-        self.render_options: dict = {"render": False, "equalize_branch": False}
+        self.render_options: dict = {"render": False, "equalize_branch": False, "PDF_equalize_branch": False}
         # toggle write to file or show tree
         # toggle branch lengths for image output aesthetics
 
@@ -1225,6 +1224,10 @@ class Application(tk.Frame, tk.Text):
         elif self.toggle == 2:
             self.render_options["equalize_branch"] = not self.render_options["equalize_branch"]
             text_box.insert(tk.END, "\n\nTree will be written to file with equalized branch lengths")
+        elif self.toggle == 3:
+            self.render_options["PDF_equalize_branch"] = not self.render_options["PDF_equalize_branch"]
+            self.render_options["equalize_branch"] = not self.render_options["equalize_branch"]
+            text_box.insert(tk.END, "\n\nTree will be written to PDF file with equalized branch lengths")
         else:
             for key in self.render_options.keys():
                 self.render_options[key] = False
@@ -1318,7 +1321,30 @@ class Application(tk.Frame, tk.Text):
                 self.call_error(6)
         else:
             self.call_error(7)
+            
+    # PNG to PDF conversion        
+    def convert_image_to_pdf(self, input, output):
+        """Function to convert image to PDF"""
+        try:
+            image = Image.open(input)
+            pdf_path = output
+            image.save(pdf_path, "PDF", resolution=100.0)
+        except Exception as e:
+            print("An error occurred with PDF creation")
+            self.call_error(16)
+        return pdf_path
     
+    def delete_file(self, file_path):
+        try:
+            os.remove(file_path)
+            print(f"File {file_path} has been deleted successfully.")
+        except FileNotFoundError:
+            print(f"File {file_path} not found.")
+            self.call_error(17)
+        except Exception as e:
+            print(f"An error occurred while deleting the file: {e}")
+            self.call_error(17)
+
     # Apply tree settings and show
     def ShowTree(self):
         # Style the tree with basic features
@@ -1397,12 +1423,17 @@ class Application(tk.Frame, tk.Text):
             self.master.attributes("-disabled", True) # Freeze the main window when tree is displayed
             if not self.render_options["render"]: 
                 self.LTree.show(tree_style=ts)
-            else:
-                if self.render_options["equalize_branch"]:
-                    for node in self.LTree.traverse():
-                        node.dist = 1.0
+            elif self.render_options["equalize_branch"]:
+                for node in self.LTree.traverse():
+                    node.dist = 1.0
                 self.LTree.render("tree_out.png", w=1200, h=800, units="px", tree_style=ts) # write tree to file
                 text_box.insert(tk.END, '\n\nTree file output to "tree_out.png"')
+            else:
+                if self.render_options["PDF_equalize_branch"]:
+                    for node in self.LTree.traverse():
+                        node.dist = 1.0
+                self.LTree.render("tree_out.pdf", w=4800, h=3600, units="px", tree_style=ts, dpi=300) # write tree to file in PDF format
+                text_box.insert(tk.END, '\n\nTree file output to "tree_out.pdf"')
             self.master.attributes("-disabled", False) # Unfreeze the main window when tree is displayed
             self.master.deiconify() # Keep tkinter window in front
         else:
@@ -1445,7 +1476,9 @@ class Application(tk.Frame, tk.Text):
             12:"Problem with strain colouring. This is most likely due to an invalid colour value or wrong formatting of the input file.",
             13:"Warning! '=' sign appears to be missing from input query.\nPlease try to run and check if there are problems.",
             14:"A valid genomap file and tree must be present in order to run queries. Please also ensure you have selected desired labels.",
-            15:"Error! Problem with file input. Ensure you have a text file with individual queries on each line"
+            15:"Error! Problem with file input. Ensure you have a text file with individual queries on each line",
+            16:"Error with PDF creation!",
+            17:"Error removing temporary files."
         }
         text_box.insert(tk.END, f'\n\n{reference[code]}')
 
